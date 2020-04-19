@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: legateway
+server:
+  port: 9999
+#  By default, Zuul will terminate and return an HTTP 500 error for any call that takes longer than one second to
+#  process a request. (This is the Hystrix default.)
+#hystrix:
+#  command:
+#    default: # You can change default to your serviceId (learningenglish)
+#      execution:
+#        isolation:
+#          thread:
+#            timeoutInMilliseconds: 10000
+#  While you’ve overridden the Hystrix timeout, the Netflix Ribbon
+#  also times out any calls that take longer than five seconds
+#ribbon:
+#  ConnectTimeout: 3000
+#  ReadTimeout: 10000
+eureka:
+  instance:
+    #    In a container-based deployment (for example, Docker), containers will be
+    #    started with randomly generated hostnames and no DNS entries for
+    #    the containers =>> your client applications won’t properly resolve the
+    #    location of the hostnames because there will
+    #    be no DNS entry for that container
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    #    tell the Spring Eureka Client to fetch a local copy of the registry.
+    #    Setting this attribute to true will cache the registry locally instead of calling the Eureka
+    #    service with every lookup. Every 30 seconds, the client software will re-contact the
+    #    Eureka service for any changes to the registry
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+
+# Set these properties to view Zuul'routes: http://localhost:9999/actuator/routes
+# "Service route based on Eureka service ID" : "Eureka service ID the route maps to"
+# "/learningenglish/**": "learningenglish"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: routes
+#  When you use automated route mapping where Zuul exposes the service based
+#  solely on the Eureka service ID, if no instances of the service are
+#  running, Zuul will not expose the route for the service. However,
+#  if you manually map a route to a service discovery ID and there
+#  are no instances registered with Eureka, Zuul will still show the route.
+#  If you try to call the route for the non-existent service, Zuul will return a 500 error
+#  If you want to exclude the automated mapping of the Eureka service ID route and
+#  only have available the organization service route that you’ve defined
+#  to exclude all Eureka-based routes, you can set the ignored-services attribute to *
+zuul:
+#  ignored-services: 'learningenglish'
+  ignored-services: '*'
+  prefix: /api
+  routes:
+    learningenglish: /le/**
+#    Zuul can be used to route services that aren't managed by Eureka
+    quizlet:
+      path: /quiz/**
+      url: http://localhost:8081
+#  you can manually configure Zuul to disable Ribbon integration with Eureka
+#  and then list the individual service instances that ribbon will load balance against
+# (comment out the above "url: http://localhost:8081" and uncomment code below)
+#---------------------------------------------
+#      serviceId: quizstatic
+#ribbon:
+#  eureka:
+#    enabled: false
+#quizstatic:
+#  ribbon:
+#    listOfServers: http://localhost:8081 #, http://localhost:8082
+#---------------------------------------------
