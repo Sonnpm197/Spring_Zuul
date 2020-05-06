@@ -74,3 +74,10 @@ zuul:
 #  ribbon:
 #    listOfServers: http://localhost:8081 #, http://localhost:8082
 #---------------------------------------------
+
+#  This configuration is a blacklist of the sensitive headers that Zuul will keep from being
+#  propagated to a downstream service. The absence of the Authorization value in the
+#  previous list means Zuul will allow it through. If you don’t set the zuul.sensitiveHeaders
+#  property at all, Zuul will automatically block all three values from being
+#  propagated (Cookie, Set-Cookie, and Authorization)
+  sensitive-headers: Cookie, Set-Cookie # Allow Authorization go through
