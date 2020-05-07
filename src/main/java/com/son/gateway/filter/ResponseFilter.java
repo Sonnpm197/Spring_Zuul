@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.son.gateway.utils.UserContext.CORRELATION_ID;
+
 @Component
 @Slf4j
 public class ResponseFilter extends ZuulFilter {
@@ -35,7 +37,7 @@ public class ResponseFilter extends ZuulFilter {
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
         log.debug("Adding the correlation id to the outbound headers. {}", filterUtils.getCorrelationId());
-        ctx.getResponse().addHeader(FilterUtils.CORRELATION_ID, filterUtils.getCorrelationId());
+        ctx.getResponse().addHeader(CORRELATION_ID, filterUtils.getCorrelationId());
         log.debug("Completing outgoing request for {}.", ctx.getRequest().getRequestURI());
         return null;
     }

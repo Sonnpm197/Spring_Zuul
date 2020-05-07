@@ -2,9 +2,14 @@ package com.son.gateway.filter;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
 
 // When a call is made to the service through the Zuul gateway, the
 // TrackingFilter will inject a correlation ID into the incoming HTTP header
@@ -17,6 +22,9 @@ public class TrackingFilter extends ZuulFilter {
 
     @Autowired
     private FilterUtils filterUtils;
+
+    @Value("${signingKey}")
+    private String signingKey;
 
     // The filterType() method is used to tell Zuul whether the filter
     // is a pre-, route, or post filter.
@@ -52,6 +60,22 @@ public class TrackingFilter extends ZuulFilter {
 
         RequestContext ctx = RequestContext.getCurrentContext();
         log.debug("Processing incoming request for {}.", ctx.getRequest().getRequestURI());
+        jwtSpecialProp();
         return null;
+    }
+
+    private void jwtSpecialProp() {
+        String jwt = filterUtils.getAuthToken().replace("Bearer ", "");
+        try {
+            Claims claims =
+                    Jwts.parser()
+                    .setSigningKey(signingKey.getBytes(StandardCharsets.UTF_8))
+                    .parseClaimsJws(jwt)
+                    .getBody();
+
+            log.info("Special property from OAuth2 server: {}", claims.get("specialProperty"));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 }
