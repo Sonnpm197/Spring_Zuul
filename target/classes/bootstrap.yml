@@ -1,6 +1,10 @@
 spring:
   application:
     name: legateway
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8888
 server:
   port: 9999
 #  By default, Zuul will terminate and return an HTTP 500 error for any call that takes longer than one second to
